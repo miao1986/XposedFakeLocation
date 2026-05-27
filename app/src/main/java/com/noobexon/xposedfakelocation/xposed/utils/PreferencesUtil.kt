@@ -65,7 +65,7 @@ object PreferencesUtil {
     fun getGpsNoiseLevel(): GpsNoiseLevel {
         preferences.reload()
         val raw = preferences.getString(KEY_GPS_NOISE_LEVEL, DEFAULT_GPS_NOISE_LEVEL) ?: DEFAULT_GPS_NOISE_LEVEL
-        return runCatching { GpsNoiseLevel.valueOf(raw) }.getOrDefault(GpsNoiseLevel.NORMAL)
+        return GpsNoiseLevel.fromPreferenceValue(raw)
     }
 
     fun getUseVerticalAccuracy(): Boolean? {

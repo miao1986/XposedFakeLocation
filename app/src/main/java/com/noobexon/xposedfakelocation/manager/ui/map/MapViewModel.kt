@@ -381,12 +381,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             useSpeedAccuracy = preferencesRepository.getUseSpeedAccuracy(),
             speedAccuracy = preferencesRepository.getSpeedAccuracy(),
             useGpsNoise = preferencesRepository.getUseGpsNoise(),
-            gpsNoiseLevel = parseGpsNoiseLevel(preferencesRepository.getGpsNoiseLevel())
+            gpsNoiseLevel = GpsNoiseLevel.fromPreferenceValue(preferencesRepository.getGpsNoiseLevel())
         )
-    }
-
-    private fun parseGpsNoiseLevel(value: String): GpsNoiseLevel {
-        return runCatching { GpsNoiseLevel.valueOf(value) }.getOrDefault(GpsNoiseLevel.NORMAL)
     }
 
     // Clear AddToFavorites inputs

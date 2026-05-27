@@ -247,7 +247,6 @@ fun MapScreen(
                 onAddTemplate = { template ->
                     mapViewModel.addTemplate(template)
                     mapViewModel.hideAddToTemplateDialog()
-                    Toast.makeText(context, "Template saved", Toast.LENGTH_SHORT).show()
                 }
             )
         }
@@ -260,7 +259,6 @@ fun MapScreen(
                 onUpdateTemplate = { template, latitude, longitude ->
                     mapViewModel.updateTemplateLocation(template, latitude, longitude)
                     mapViewModel.hideUpdateTemplateLocationDialog()
-                    Toast.makeText(context, "Template location updated", Toast.LENGTH_SHORT).show()
                 }
             )
         }

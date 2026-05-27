@@ -3,7 +3,13 @@ package com.noobexon.xposedfakelocation.data.model
 enum class GpsNoiseLevel {
     LOW,
     NORMAL,
-    HIGH
+    HIGH;
+
+    companion object {
+        fun fromPreferenceValue(value: String?): GpsNoiseLevel {
+            return runCatching { valueOf(value ?: NORMAL.name) }.getOrDefault(NORMAL)
+        }
+    }
 }
 
 enum class OverrideState {
