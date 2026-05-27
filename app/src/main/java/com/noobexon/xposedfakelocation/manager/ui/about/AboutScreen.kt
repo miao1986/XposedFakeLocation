@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,13 +22,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.compose.ui.platform.LocalContext
 import com.noobexon.xposedfakelocation.BuildConfig
-
+import com.noobexon.xposedfakelocation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +54,7 @@ fun AboutScreen(
 @Composable
 fun AboutTopAppBar(navController: NavController) {
     TopAppBar(
-        title = { Text("About") },
+        title = { Text(stringResource(R.string.about)) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -62,7 +63,10 @@ fun AboutTopAppBar(navController: NavController) {
         ),
         navigationIcon = {
             IconButton(onClick = { navController.navigateUp() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back)
+                )
             }
         }
     )
@@ -87,7 +91,7 @@ fun AboutContent() {
 @Composable
 fun AppTitle() {
     Text(
-        text = "XposedFakeLocation",
+        text = stringResource(R.string.app_name),
         style = MaterialTheme.typography.headlineSmall.copy(
             fontWeight = FontWeight.Bold
         ),
@@ -98,13 +102,7 @@ fun AppTitle() {
 @Composable
 fun AppDescription() {
     Text(
-        text = """
-            XposedFakeLocation is an app designed to allow users to mock their location for testing or entertainment purposes. 
-            
-            Use it responsibly, and make sure to comply with all applicable local regulations when using location services. 
-            
-            You are fully responsible for the use of this app.
-        """.trimIndent(),
+        text = stringResource(R.string.app_description),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center
     )
@@ -120,7 +118,7 @@ fun AppVersionSection() {
 @Composable
 fun AppVersionTitle() {
     Text(
-        text = "Version:",
+        text = stringResource(R.string.version),
         style = MaterialTheme.typography.bodyMedium.copy(
             fontWeight = FontWeight.SemiBold
         ),
@@ -151,7 +149,7 @@ fun AppDeveloperSection() {
 @Composable
 fun AppDeveloperTitle() {
     Text(
-        text = "Developed and maintained by:",
+        text = stringResource(R.string.developed_and_maintained_by),
         style = MaterialTheme.typography.bodyMedium.copy(
             fontWeight = FontWeight.SemiBold
         ),

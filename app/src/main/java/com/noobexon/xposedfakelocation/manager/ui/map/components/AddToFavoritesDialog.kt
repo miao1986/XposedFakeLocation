@@ -5,9 +5,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.noobexon.xposedfakelocation.R
 import com.noobexon.xposedfakelocation.manager.ui.map.MapViewModel
 
 @Composable
@@ -16,35 +18,34 @@ fun AddToFavoritesDialog(
     onDismissRequest: () -> Unit,
     onAddFavorite: (name: String, latitude: Double, longitude: Double) -> Unit
 ) {
-    // Access UI state through StateFlow
     val uiState by mapViewModel.uiState.collectAsStateWithLifecycle()
     val addToFavoritesState = uiState.addToFavoritesState
-    
+
     val favoriteNameInput = addToFavoritesState.name.value
     val favoriteLatitudeInput = addToFavoritesState.latitude.value
     val favoriteLongitudeInput = addToFavoritesState.longitude.value
-    val favoriteNameError = addToFavoritesState.name.errorMessage
-    val favoriteLatitudeError = addToFavoritesState.latitude.errorMessage
-    val favoriteLongitudeError = addToFavoritesState.longitude.errorMessage
+    val favoriteNameError = addToFavoritesState.name.errorMessageResId
+    val favoriteLatitudeError = addToFavoritesState.latitude.errorMessageResId
+    val favoriteLongitudeError = addToFavoritesState.longitude.errorMessageResId
 
     AlertDialog(
         onDismissRequest = {
             mapViewModel.clearAddToFavoritesInputs()
             onDismissRequest()
         },
-        title = { Text("Add to Favorites") },
+        title = { Text(stringResource(R.string.add_to_favorites)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = favoriteNameInput,
                     onValueChange = { mapViewModel.updateAddToFavoritesField("name", it) },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.name)) },
                     modifier = Modifier.fillMaxWidth(),
                     isError = favoriteNameError != null
                 )
                 if (favoriteNameError != null) {
                     Text(
-                        text = favoriteNameError,
+                        text = stringResource(favoriteNameError),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 16.dp)
@@ -54,14 +55,14 @@ fun AddToFavoritesDialog(
                 OutlinedTextField(
                     value = favoriteLatitudeInput,
                     onValueChange = { mapViewModel.updateAddToFavoritesField("latitude", it) },
-                    label = { Text("Latitude") },
+                    label = { Text(stringResource(R.string.latitude)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     isError = favoriteLatitudeError != null
                 )
                 if (favoriteLatitudeError != null) {
                     Text(
-                        text = favoriteLatitudeError,
+                        text = stringResource(favoriteLatitudeError),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 16.dp)
@@ -71,14 +72,14 @@ fun AddToFavoritesDialog(
                 OutlinedTextField(
                     value = favoriteLongitudeInput,
                     onValueChange = { mapViewModel.updateAddToFavoritesField("longitude", it) },
-                    label = { Text("Longitude") },
+                    label = { Text(stringResource(R.string.longitude)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     isError = favoriteLongitudeError != null
                 )
                 if (favoriteLongitudeError != null) {
                     Text(
-                        text = favoriteLongitudeError,
+                        text = stringResource(favoriteLongitudeError),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 16.dp)
@@ -94,7 +95,7 @@ fun AddToFavoritesDialog(
                     }
                 }
             ) {
-                Text("Add")
+                Text(stringResource(R.string.add))
             }
         },
         dismissButton = {
@@ -104,7 +105,7 @@ fun AddToFavoritesDialog(
                     onDismissRequest()
                 }
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

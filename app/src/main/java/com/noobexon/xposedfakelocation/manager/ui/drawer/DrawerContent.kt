@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,16 +18,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.noobexon.xposedfakelocation.BuildConfig
+import com.noobexon.xposedfakelocation.R
+import com.noobexon.xposedfakelocation.manager.ui.navigation.Screen
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.*
-import com.noobexon.xposedfakelocation.manager.ui.navigation.Screen
 
-// Constants for drawer dimensions and styling
 private object DrawerDimensions {
     val SECTION_SPACING = 24.dp
     val ITEM_SPACING = 4.dp
@@ -57,27 +57,25 @@ fun DrawerContent(
                 .fillMaxHeight()
                 .padding(DrawerDimensions.DRAWER_PADDING)
         ) {
-            // App Header
             DrawerHeader()
-            
+
             Spacer(modifier = Modifier.height(DrawerDimensions.SECTION_SPACING))
-            
-            // Navigation Section
-            DrawerSectionHeader("Navigation")
-            
+
+            DrawerSectionHeader(stringResource(R.string.navigation))
+
             DrawerItem(
                 icon = LineAwesomeIcons.MapSolid,
-                label = "Map",
+                label = stringResource(R.string.map),
                 onClick = {
                     navController.navigate(Screen.Map.route)
                     onCloseDrawer()
                 },
                 isSelected = navController.currentDestination?.route == Screen.Map.route
             )
-            
+
             DrawerItem(
                 icon = LineAwesomeIcons.HeartSolid,
-                label = "Favorites",
+                label = stringResource(R.string.favorites),
                 onClick = {
                     navController.navigate(Screen.Favorites.route)
                     onCloseDrawer()
@@ -87,33 +85,33 @@ fun DrawerContent(
 
             DrawerItem(
                 icon = LineAwesomeIcons.MobileAltSolid,
-                label = "Target Apps",
+                label = stringResource(R.string.target_apps),
                 onClick = {
                     navController.navigate(Screen.TargetApps.route)
                     onCloseDrawer()
                 },
                 isSelected = navController.currentDestination?.route == Screen.TargetApps.route
             )
-            
+
             DrawerItem(
                 icon = Icons.Default.Settings,
-                label = "Settings",
+                label = stringResource(R.string.settings),
                 onClick = {
                     navController.navigate(Screen.Settings.route)
                     onCloseDrawer()
                 },
                 isSelected = navController.currentDestination?.route == Screen.Settings.route
             )
-            
+
             Spacer(modifier = Modifier.height(DrawerDimensions.SECTION_SPACING))
-            
-            // Community Section
-            DrawerSectionHeader("Community")
-            
+
+            DrawerSectionHeader(stringResource(R.string.community))
+            val comingSoon = stringResource(R.string.coming_soon)
+
             DrawerItem(
                 icon = LineAwesomeIcons.Telegram,
                 label = "Telegram",
-                onClick = { Toast.makeText(context, "Coming soon!", Toast.LENGTH_SHORT).show() },
+                onClick = { Toast.makeText(context, comingSoon, Toast.LENGTH_SHORT).show() },
                 trailingIcon = {
                     Box(
                         modifier = Modifier
@@ -123,7 +121,7 @@ fun DrawerContent(
                     )
                 }
             )
-            
+
             DrawerItem(
                 icon = LineAwesomeIcons.Discord,
                 label = "Discord",
@@ -133,7 +131,7 @@ fun DrawerContent(
                     onCloseDrawer()
                 }
             )
-            
+
             DrawerItem(
                 icon = LineAwesomeIcons.Github,
                 label = "GitHub",
@@ -143,27 +141,25 @@ fun DrawerContent(
                     onCloseDrawer()
                 }
             )
-            
+
             Spacer(modifier = Modifier.height(DrawerDimensions.SECTION_SPACING))
-            
-            // About Section
-            DrawerSectionHeader("App Info")
-            
+
+            DrawerSectionHeader(stringResource(R.string.app_info))
+
             DrawerItem(
                 icon = LineAwesomeIcons.InfoCircleSolid,
-                label = "About",
+                label = stringResource(R.string.about),
                 onClick = {
                     navController.navigate(Screen.About.route)
                     onCloseDrawer()
                 },
                 isSelected = navController.currentDestination?.route == Screen.About.route
             )
-            
-            // Add version info at the bottom
+
             Spacer(modifier = Modifier.weight(1f))
-            
+
             Text(
-                text = "Version ${BuildConfig.VERSION_NAME}",
+                text = stringResource(R.string.version_name, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier
@@ -182,14 +178,14 @@ fun DrawerHeader() {
             .padding(DrawerDimensions.HEADER_PADDING)
     ) {
         Text(
-            text = "XposedFakeLocation",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
-        
+
         Text(
-            text = "Spoof your location easily",
+            text = stringResource(R.string.app_tagline),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -223,13 +219,13 @@ fun DrawerItem(
     } else {
         Color.Transparent
     }
-    
+
     val contentColor = if (isSelected) {
         MaterialTheme.colorScheme.onPrimaryContainer
     } else {
         MaterialTheme.colorScheme.onSurface
     }
-    
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -259,7 +255,7 @@ fun DrawerItem(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-            
+
             trailingIcon?.invoke()
         }
     }

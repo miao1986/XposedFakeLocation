@@ -43,6 +43,8 @@ const val KEY_USE_INAPP_TARGET_APPS = "use_inapp_target_apps"
 
 const val KEY_ENABLE_BROADCAST_CONTROL = "enable_broadcast_control"
 
+const val KEY_LANGUAGE_TAG = "language_tag"
+
  // DEFAULT VALUES
 const val DEFAULT_USE_ACCURACY = false
 const val DEFAULT_ACCURACY = 0.0
@@ -73,6 +75,8 @@ const val DEFAULT_HIDE_FAKE_LOCATION_TOAST = false
 const val DEFAULT_USE_INAPP_TARGET_APPS = true
 
 const val DEFAULT_ENABLE_BROADCAST_CONTROL = false
+
+const val DEFAULT_LANGUAGE_TAG = ""
 
 // MATH & PHYS
 const val PI = 3.14159265359

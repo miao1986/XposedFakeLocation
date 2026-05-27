@@ -106,6 +106,11 @@ object PreferencesUtil {
         }
     }
 
+    fun getLanguageTag(): String {
+        preferences.reload()
+        return preferences.getString(KEY_LANGUAGE_TAG, DEFAULT_LANGUAGE_TAG) ?: DEFAULT_LANGUAGE_TAG
+    }
+
     fun getTargetApps(): Set<String> {
         preferences.reload()
         val json = preferences.getString(KEY_TARGET_APPS, null) ?: return emptySet()

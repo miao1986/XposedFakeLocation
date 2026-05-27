@@ -1,37 +1,38 @@
-//SettingsScreen.kt
 package com.noobexon.xposedfakelocation.manager.ui.settings
 
+import android.app.Activity
 import android.content.ComponentName
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.noobexon.xposedfakelocation.R
 import com.noobexon.xposedfakelocation.manager.control.ControlReceiver
+import com.noobexon.xposedfakelocation.manager.localization.LanguageOption
+import com.noobexon.xposedfakelocation.manager.localization.LocaleController
 
-// Dimension constants
 private object Dimensions {
     val SPACING_EXTRA_SMALL = 4.dp
     val SPACING_SMALL = 8.dp
@@ -39,162 +40,165 @@ private object Dimensions {
     val SPACING_LARGE = 24.dp
     val CARD_CORNER_RADIUS = 12.dp
     val CARD_ELEVATION = 2.dp
-    val CATEGORY_SPACING = 32.dp
 }
 
-// Setting definitions to reduce duplication
+private data class SettingsCategory(
+    val title: String,
+    val settings: List<SettingData>
+)
+
 private object SettingDefinitions {
-    // Define setting categories
-    val CATEGORIES = mapOf(
-        "Location" to listOf("Randomize Nearby Location", "Custom Horizontal Accuracy", "Custom Vertical Accuracy"),
-        "Altitude" to listOf("Custom Altitude", "Custom MSL", "Custom MSL Accuracy"),
-        "Movement" to listOf("Custom Speed", "Custom Speed Accuracy")
-    )
-    
-    // Define all settings with their parameters
     @Composable
-    fun getSettings(viewModel: SettingsViewModel): List<SettingData> = listOf(
-        // Randomize Nearby Location
-        DoubleSettingData(
-            title = "Randomize Nearby Location",
-            description = "Randomly places your location within the specified radius",
-            useValueState = viewModel.useRandomize.collectAsState(),
-            valueState = viewModel.randomizeRadius.collectAsState(),
-            setUseValue = viewModel::setUseRandomize,
-            setValue = viewModel::setRandomizeRadius,
-            label = "Randomization Radius",
-            unit = "m",
-            minValue = 0f,
-            maxValue = 2000f,
-            step = 0.1f
-        ),
-        // Custom Horizontal Accuracy
-        DoubleSettingData(
-            title = "Custom Horizontal Accuracy",
-            description = "Sets the horizontal accuracy of your location",
-            useValueState = viewModel.useAccuracy.collectAsState(),
-            valueState = viewModel.accuracy.collectAsState(),
-            setUseValue = viewModel::setUseAccuracy,
-            setValue = viewModel::setAccuracy,
-            label = "Horizontal Accuracy",
-            unit = "m",
-            minValue = 0f,
-            maxValue = 100f,
-            step = 1f
-        ),
-        // Custom Vertical Accuracy
-        FloatSettingData(
-            title = "Custom Vertical Accuracy",
-            description = "Sets the vertical accuracy of your location",
-            useValueState = viewModel.useVerticalAccuracy.collectAsState(),
-            valueState = viewModel.verticalAccuracy.collectAsState(),
-            setUseValue = viewModel::setUseVerticalAccuracy,
-            setValue = viewModel::setVerticalAccuracy,
-            label = "Vertical Accuracy",
-            unit = "m",
-            minValue = 0f,
-            maxValue = 100f,
-            step = 1f
-        ),
-        // Custom Altitude
-        DoubleSettingData(
-            title = "Custom Altitude",
-            description = "Sets a custom altitude for your location",
-            useValueState = viewModel.useAltitude.collectAsState(),
-            valueState = viewModel.altitude.collectAsState(),
-            setUseValue = viewModel::setUseAltitude,
-            setValue = viewModel::setAltitude,
-            label = "Altitude",
-            unit = "m",
-            minValue = 0f,
-            maxValue = 2000f,
-            step = 0.5f
-        ),
-        // Custom MSL
-        DoubleSettingData(
-            title = "Custom MSL",
-            description = "Sets a custom mean sea level value",
-            useValueState = viewModel.useMeanSeaLevel.collectAsState(),
-            valueState = viewModel.meanSeaLevel.collectAsState(),
-            setUseValue = viewModel::setUseMeanSeaLevel,
-            setValue = viewModel::setMeanSeaLevel,
-            label = "MSL",
-            unit = "m",
-            minValue = -400f,
-            maxValue = 2000f,
-            step = 0.5f
-        ),
-        // Custom MSL Accuracy
-        FloatSettingData(
-            title = "Custom MSL Accuracy",
-            description = "Sets the accuracy of the mean sea level value",
-            useValueState = viewModel.useMeanSeaLevelAccuracy.collectAsState(),
-            valueState = viewModel.meanSeaLevelAccuracy.collectAsState(),
-            setUseValue = viewModel::setUseMeanSeaLevelAccuracy,
-            setValue = viewModel::setMeanSeaLevelAccuracy,
-            label = "MSL Accuracy",
-            unit = "m",
-            minValue = 0f,
-            maxValue = 100f,
-            step = 1f
-        ),
-        // Custom Speed
-        FloatSettingData(
-            title = "Custom Speed",
-            description = "Sets a custom speed for your location",
-            useValueState = viewModel.useSpeed.collectAsState(),
-            valueState = viewModel.speed.collectAsState(),
-            setUseValue = viewModel::setUseSpeed,
-            setValue = viewModel::setSpeed,
-            label = "Speed",
-            unit = "m/s",
-            minValue = 0f,
-            maxValue = 30f,
-            step = 0.1f
-        ),
-        // Custom Speed Accuracy
-        FloatSettingData(
-            title = "Custom Speed Accuracy",
-            description = "Sets the accuracy of your speed value",
-            useValueState = viewModel.useSpeedAccuracy.collectAsState(),
-            valueState = viewModel.speedAccuracy.collectAsState(),
-            setUseValue = viewModel::setUseSpeedAccuracy,
-            setValue = viewModel::setSpeedAccuracy,
-            label = "Speed Accuracy",
-            unit = "m/s",
-            minValue = 0f,
-            maxValue = 100f,
-            step = 1f
+    fun getCategories(viewModel: SettingsViewModel): List<SettingsCategory> {
+        val meter = stringResource(R.string.unit_meter)
+        val meterPerSecond = stringResource(R.string.unit_meter_per_second)
+
+        return listOf(
+            SettingsCategory(
+                title = stringResource(R.string.location),
+                settings = listOf(
+                    DoubleSettingData(
+                        title = stringResource(R.string.randomize_nearby_location),
+                        description = stringResource(R.string.randomize_nearby_location_description),
+                        useValueState = viewModel.useRandomize.collectAsState(),
+                        valueState = viewModel.randomizeRadius.collectAsState(),
+                        setUseValue = viewModel::setUseRandomize,
+                        setValue = viewModel::setRandomizeRadius,
+                        label = stringResource(R.string.randomization_radius),
+                        unit = meter,
+                        minValue = 0f,
+                        maxValue = 2000f,
+                        step = 0.1f
+                    ),
+                    DoubleSettingData(
+                        title = stringResource(R.string.custom_horizontal_accuracy),
+                        description = stringResource(R.string.custom_horizontal_accuracy_description),
+                        useValueState = viewModel.useAccuracy.collectAsState(),
+                        valueState = viewModel.accuracy.collectAsState(),
+                        setUseValue = viewModel::setUseAccuracy,
+                        setValue = viewModel::setAccuracy,
+                        label = stringResource(R.string.horizontal_accuracy),
+                        unit = meter,
+                        minValue = 0f,
+                        maxValue = 100f,
+                        step = 1f
+                    ),
+                    FloatSettingData(
+                        title = stringResource(R.string.custom_vertical_accuracy),
+                        description = stringResource(R.string.custom_vertical_accuracy_description),
+                        useValueState = viewModel.useVerticalAccuracy.collectAsState(),
+                        valueState = viewModel.verticalAccuracy.collectAsState(),
+                        setUseValue = viewModel::setUseVerticalAccuracy,
+                        setValue = viewModel::setVerticalAccuracy,
+                        label = stringResource(R.string.vertical_accuracy),
+                        unit = meter,
+                        minValue = 0f,
+                        maxValue = 100f,
+                        step = 1f
+                    )
+                )
+            ),
+            SettingsCategory(
+                title = stringResource(R.string.altitude),
+                settings = listOf(
+                    DoubleSettingData(
+                        title = stringResource(R.string.custom_altitude),
+                        description = stringResource(R.string.custom_altitude_description),
+                        useValueState = viewModel.useAltitude.collectAsState(),
+                        valueState = viewModel.altitude.collectAsState(),
+                        setUseValue = viewModel::setUseAltitude,
+                        setValue = viewModel::setAltitude,
+                        label = stringResource(R.string.altitude),
+                        unit = meter,
+                        minValue = 0f,
+                        maxValue = 2000f,
+                        step = 0.5f
+                    ),
+                    DoubleSettingData(
+                        title = stringResource(R.string.custom_msl),
+                        description = stringResource(R.string.custom_msl_description),
+                        useValueState = viewModel.useMeanSeaLevel.collectAsState(),
+                        valueState = viewModel.meanSeaLevel.collectAsState(),
+                        setUseValue = viewModel::setUseMeanSeaLevel,
+                        setValue = viewModel::setMeanSeaLevel,
+                        label = stringResource(R.string.msl),
+                        unit = meter,
+                        minValue = -400f,
+                        maxValue = 2000f,
+                        step = 0.5f
+                    ),
+                    FloatSettingData(
+                        title = stringResource(R.string.custom_msl_accuracy),
+                        description = stringResource(R.string.custom_msl_accuracy_description),
+                        useValueState = viewModel.useMeanSeaLevelAccuracy.collectAsState(),
+                        valueState = viewModel.meanSeaLevelAccuracy.collectAsState(),
+                        setUseValue = viewModel::setUseMeanSeaLevelAccuracy,
+                        setValue = viewModel::setMeanSeaLevelAccuracy,
+                        label = stringResource(R.string.msl_accuracy),
+                        unit = meter,
+                        minValue = 0f,
+                        maxValue = 100f,
+                        step = 1f
+                    )
+                )
+            ),
+            SettingsCategory(
+                title = stringResource(R.string.movement),
+                settings = listOf(
+                    FloatSettingData(
+                        title = stringResource(R.string.custom_speed),
+                        description = stringResource(R.string.custom_speed_description),
+                        useValueState = viewModel.useSpeed.collectAsState(),
+                        valueState = viewModel.speed.collectAsState(),
+                        setUseValue = viewModel::setUseSpeed,
+                        setValue = viewModel::setSpeed,
+                        label = stringResource(R.string.speed),
+                        unit = meterPerSecond,
+                        minValue = 0f,
+                        maxValue = 30f,
+                        step = 0.1f
+                    ),
+                    FloatSettingData(
+                        title = stringResource(R.string.custom_speed_accuracy),
+                        description = stringResource(R.string.custom_speed_accuracy_description),
+                        useValueState = viewModel.useSpeedAccuracy.collectAsState(),
+                        valueState = viewModel.speedAccuracy.collectAsState(),
+                        setUseValue = viewModel::setUseSpeedAccuracy,
+                        setValue = viewModel::setSpeedAccuracy,
+                        label = stringResource(R.string.speed_accuracy),
+                        unit = meterPerSecond,
+                        minValue = 0f,
+                        maxValue = 100f,
+                        step = 1f
+                    )
+                )
+            )
         )
-    )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    settingsViewModel: SettingsViewModel = viewModel ()
+    settingsViewModel: SettingsViewModel = viewModel()
 ) {
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     var showRebootDialog by remember { mutableStateOf(false) }
-
-    // Get settings from the definition object
-    val allSettings = SettingDefinitions.getSettings(settingsViewModel)
+    val selectedLanguageTag by settingsViewModel.languageTag.collectAsState()
+    val selectedLanguage = LanguageOption.fromTag(selectedLanguageTag)
+    val settingCategories = SettingDefinitions.getCategories(settingsViewModel)
 
     if (showRebootDialog) {
         AlertDialog(
             onDismissRequest = { showRebootDialog = false },
-            title = { Text("Reboot required") },
-            text = {
-                Text(
-                    "You just enabled 'Use built-in target app selection'. The system_server and com.android.phone hooks can only be installed at boot, so a full device reboot is required for this change to take effect. Per-app hooks are unaffected and pick up changes on the next app launch."
-                )
-            },
+            title = { Text(stringResource(R.string.reboot_required)) },
+            text = { Text(stringResource(R.string.reboot_required_description)) },
             confirmButton = {
                 TextButton(onClick = { showRebootDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
@@ -203,7 +207,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -213,8 +217,8 @@ fun SettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = "Navigate back"
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
                         )
                     }
                 }
@@ -238,7 +242,30 @@ fun SettingsScreen(
             ) {
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
 
-                CategoryHeader("Notifications")
+                CategoryHeader(stringResource(R.string.language))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
+                        LanguageSettingItem(
+                            selectedLanguage = selectedLanguage,
+                            onLanguageSelected = { option ->
+                                if (option.tag != selectedLanguageTag) {
+                                    settingsViewModel.setLanguageTag(option.tag)
+                                    LocaleController.persistLanguageTag(context, option.tag)
+                                    context.findActivity()?.recreate()
+                                }
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
+                CategoryHeader(stringResource(R.string.notifications))
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -248,8 +275,8 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
                         BooleanSettingItem(
-                            title = "Hide 'Fake location active' toast",
-                            description = "Suppresses the toast shown when the module activates in a target app",
+                            title = stringResource(R.string.hide_fake_location_toast),
+                            description = stringResource(R.string.hide_fake_location_toast_description),
                             checked = settingsViewModel.hideFakeLocationToast.collectAsState().value,
                             onCheckedChange = settingsViewModel::setHideFakeLocationToast
                         )
@@ -257,7 +284,7 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
 
-                CategoryHeader("Target Apps")
+                CategoryHeader(stringResource(R.string.target_apps))
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -267,8 +294,8 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
                         BooleanSettingItem(
-                            title = "Use built-in target app selection",
-                            description = "On (default): target apps are picked in the in-app 'Target Apps' screen; LSPosed scope only needs 'android' and 'com.android.phone'. Off: the in-app list is ignored and the system-server / phone hooks are skipped — pick target apps directly in LSPosed scope (pre-v0.0.7 behavior). A reboot is only required when enabling this option, so the system_server and com.android.phone hooks can be installed at boot. Switching back to the LSPosed-scope-only method, or any per-app target-list change, takes effect at the next app launch — no reboot needed.",
+                            title = stringResource(R.string.use_builtin_target_app_selection),
+                            description = stringResource(R.string.use_builtin_target_app_selection_description),
                             checked = settingsViewModel.useInAppTargetApps.collectAsState().value,
                             onCheckedChange = { newValue ->
                                 settingsViewModel.setUseInAppTargetApps(newValue)
@@ -281,7 +308,7 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
 
-                CategoryHeader("External Control")
+                CategoryHeader(stringResource(R.string.external_control))
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -291,8 +318,8 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
                         BooleanSettingItem(
-                            title = "Allow external broadcast control",
-                            description = "Off (default): blocks the BroadcastReceiver — no app or ADB shell can start/stop spoofing or set coordinates via intents. On: any installed app and 'adb shell am broadcast' can drive the module (no permission check; coordinates are clamped to valid lat/lon ranges). Only enable this if you trust every app on the device or are running on a controlled (e.g., automation) device. See docs/EXTERNAL_CONTROL.md for actions and lock-down options.",
+                            title = stringResource(R.string.allow_external_broadcast_control),
+                            description = stringResource(R.string.allow_external_broadcast_control_description),
                             checked = settingsViewModel.enableBroadcastControl.collectAsState().value,
                             onCheckedChange = { newValue ->
                                 settingsViewModel.setEnableBroadcastControl(newValue)
@@ -303,10 +330,9 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
 
-                // Display settings by category
-                SettingDefinitions.CATEGORIES.forEach { (category, settingsInCategory) ->
-                    CategoryHeader(category)
-                    
+                settingCategories.forEach { category ->
+                    CategoryHeader(category.title)
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -315,39 +341,39 @@ fun SettingsScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
                     ) {
                         Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
-                            settingsInCategory.forEach { settingTitle ->
-                                val setting = allSettings.find { it.title == settingTitle }
-                                setting?.let {
-                                    when (setting) {
-                                        is DoubleSettingData -> {
-                                            DoubleSettingComposable(setting)
-                                        }
-                                        is FloatSettingData -> {
-                                            FloatSettingComposable(setting)
-                                        }
-                                    }
-                                    if (settingTitle != settingsInCategory.last()) {
-                                        HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = Dimensions.SPACING_SMALL),
-                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                        )
-                                    }
+                            category.settings.forEachIndexed { index, setting ->
+                                when (setting) {
+                                    is DoubleSettingData -> DoubleSettingComposable(setting)
+                                    is FloatSettingData -> FloatSettingComposable(setting)
+                                }
+                                if (index != category.settings.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(vertical = Dimensions.SPACING_SMALL),
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                    )
                                 }
                             }
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
                 }
-                
-                // Add space at the bottom of the list
+
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_LARGE))
             }
         }
     }
 }
 
-private fun setControlReceiverEnabled(context: android.content.Context, enabled: Boolean) {
+private tailrec fun Context.findActivity(): Activity? {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
+}
+
+private fun setControlReceiverEnabled(context: Context, enabled: Boolean) {
     val component = ComponentName(context, ControlReceiver::class.java)
     val newState = if (enabled) {
         PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -386,6 +412,49 @@ fun CategoryHeader(title: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguageSettingItem(
+    selectedLanguage: LanguageOption,
+    onLanguageSelected: (LanguageOption) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimensions.SPACING_SMALL)
+    ) {
+        OutlinedTextField(
+            value = stringResource(selectedLanguage.labelRes),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.language)) },
+            supportingText = { Text(stringResource(R.string.language_description)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            LanguageOption.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(option.labelRes)) },
+                    onClick = {
+                        expanded = false
+                        onLanguageSelected(option)
+                    }
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun BooleanSettingItem(
     title: String,
@@ -394,10 +463,17 @@ fun BooleanSettingItem(
     onCheckedChange: (Boolean) -> Unit
 ) {
     var showTooltip by remember { mutableStateOf(false) }
+    val infoContentDescription = stringResource(R.string.more_information_about, title)
+    val switchContentDescription = if (checked) {
+        stringResource(R.string.disable_setting, title)
+    } else {
+        stringResource(R.string.enable_setting, title)
+    }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(Dimensions.SPACING_SMALL)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimensions.SPACING_SMALL)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -419,7 +495,7 @@ fun BooleanSettingItem(
                     ) {
                         Icon(
                             Icons.Default.Info,
-                            contentDescription = "More information about $title",
+                            contentDescription = infoContentDescription,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
@@ -446,7 +522,7 @@ fun BooleanSettingItem(
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 modifier = Modifier.semantics {
-                    contentDescription = if (checked) "Disable $title" else "Enable $title"
+                    contentDescription = switchContentDescription
                 }
             )
         }
@@ -533,10 +609,18 @@ private fun <T : Number> SettingItem(
     parseValue: (Float) -> T
 ) {
     var showTooltip by remember { mutableStateOf(false) }
-    
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(Dimensions.SPACING_SMALL)
+    val infoContentDescription = stringResource(R.string.more_information_about, title)
+    val switchContentDescription = if (useValue) {
+        stringResource(R.string.disable_setting, title)
+    } else {
+        stringResource(R.string.enable_setting, title)
+    }
+    val sliderContentDescription = stringResource(R.string.adjust_setting_value, title)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimensions.SPACING_SMALL)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -551,20 +635,20 @@ private fun <T : Number> SettingItem(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
-                    
+
                     IconButton(
                         onClick = { showTooltip = !showTooltip },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             Icons.Default.Info,
-                            contentDescription = "More information about $title",
+                            contentDescription = infoContentDescription,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
                 }
-                
+
                 if (showTooltip) {
                     Text(
                         text = description,
@@ -574,7 +658,7 @@ private fun <T : Number> SettingItem(
                     )
                 }
             }
-            
+
             Switch(
                 checked = useValue,
                 onCheckedChange = onUseValueChange,
@@ -584,24 +668,24 @@ private fun <T : Number> SettingItem(
                     uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
-                modifier = Modifier.semantics { 
-                    contentDescription = if (useValue) "Disable $title" else "Enable $title" 
+                modifier = Modifier.semantics {
+                    contentDescription = switchContentDescription
                 }
             )
         }
 
         if (useValue) {
             Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
-            
+
             var sliderValue by remember { mutableFloatStateOf(value.toFloat()) }
             var showExactValue by remember { mutableStateOf(false) }
-            
+
             LaunchedEffect(value) {
                 if (sliderValue != value.toFloat()) {
                     sliderValue = value.toFloat()
                 }
             }
-            
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Dimensions.SPACING_SMALL),
@@ -615,10 +699,9 @@ private fun <T : Number> SettingItem(
                         .weight(1f)
                         .clickable { showExactValue = !showExactValue }
                 )
-                
-                // Add +/- buttons for precise adjustment
+
                 OutlinedIconButton(
-                    onClick = { 
+                    onClick = {
                         val newValue = (sliderValue - step).coerceAtLeast(minValue)
                         sliderValue = newValue
                         onValueChange(parseValue(newValue))
@@ -633,9 +716,9 @@ private fun <T : Number> SettingItem(
                         style = MaterialTheme.typography.titleSmall
                     )
                 }
-                
+
                 OutlinedIconButton(
-                    onClick = { 
+                    onClick = {
                         val newValue = (sliderValue + step).coerceAtMost(maxValue)
                         sliderValue = newValue
                         onValueChange(parseValue(newValue))
@@ -651,8 +734,7 @@ private fun <T : Number> SettingItem(
                     )
                 }
             }
-            
-            // Min and max value labels
+
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
@@ -689,7 +771,7 @@ private fun <T : Number> SettingItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics {
-                        contentDescription = "Adjust $title value"
+                        contentDescription = sliderContentDescription
                     }
             )
         }

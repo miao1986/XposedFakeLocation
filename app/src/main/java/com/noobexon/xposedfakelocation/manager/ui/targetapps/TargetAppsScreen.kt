@@ -39,13 +39,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.noobexon.xposedfakelocation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +60,7 @@ fun TargetAppsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Target Apps") },
+                title = { Text(stringResource(R.string.target_apps)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -66,7 +68,10 @@ fun TargetAppsScreen(
                 ),
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
+                        )
                     }
                 }
             )
@@ -79,14 +84,12 @@ fun TargetAppsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-
-
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = viewModel::updateSearchQuery,
-                label = { Text("Search apps or package names") },
+                label = { Text(stringResource(R.string.search_apps_or_package_names)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -94,7 +97,7 @@ fun TargetAppsScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "${uiState.selectedPackages.size} selected",
+                text = stringResource(R.string.selected_count, uiState.selectedPackages.size),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -186,7 +189,7 @@ private fun AppIcon(
     if (iconBitmap != null) {
         Image(
             bitmap = iconBitmap.asImageBitmap(),
-            contentDescription = "$label icon",
+            contentDescription = label,
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
