@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -81,7 +82,9 @@ fun AboutTopAppBar(navController: NavController) {
 }
 
 @Composable
-fun AboutContent() {
+fun AboutContent(aboutViewModel: AboutViewModel = viewModel()) {
+    val state by aboutViewModel.contributorsState.collectAsState()
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -94,9 +97,15 @@ fun AboutContent() {
         Spacer(modifier = Modifier.height(32.dp))
         AppVersionSection()
         Spacer(modifier = Modifier.height(16.dp))
-        AppDeveloperSection()
+        AppDeveloperSection(
+            developer = (state as? ContributorsUiState.Success)?.developer
+                ?: aboutViewModel.developerFallback
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        AppContributorsSection()
+        AppContributorsSection(
+            state = state,
+            onRetry = { aboutViewModel.loadContributors(forceRefresh = true) }
+        )
     }
 }
 
@@ -146,10 +155,10 @@ fun AppVersionValue() {
 }
 
 @Composable
-fun AppDeveloperSection() {
+fun AppDeveloperSection(developer: Contributor) {
     AppDeveloperTitle()
     Spacer(modifier = Modifier.height(16.dp))
-    AppDeveloperValue()
+    ContributorRow(developer)
 }
 
 @Composable
@@ -163,28 +172,10 @@ fun AppDeveloperTitle() {
 }
 
 @Composable
-fun AppDeveloperValue() {
-    val context = LocalContext.current
-    Text(
-        text = "noobexon",
-        style = MaterialTheme.typography.bodyMedium.copy(
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary
-        ),
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .padding(top = 4.dp)
-            .clickable {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/noobexon1"))
-                context.startActivity(intent)
-            }
-    )
-}
-
-@Composable
-fun AppContributorsSection(aboutViewModel: AboutViewModel = viewModel()) {
-    val state by aboutViewModel.contributorsState.collectAsState()
-
+fun AppContributorsSection(
+    state: ContributorsUiState,
+    onRetry: () -> Unit
+) {
     Text(
         text = stringResource(R.string.about_contributors_label),
         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -195,9 +186,7 @@ fun AppContributorsSection(aboutViewModel: AboutViewModel = viewModel()) {
 
     when (val current = state) {
         is ContributorsUiState.Loading -> ContributorsLoading()
-        is ContributorsUiState.Error -> ContributorsError(
-            onRetry = aboutViewModel::loadContributors
-        )
+        is ContributorsUiState.Error -> ContributorsError(onRetry = onRetry)
         is ContributorsUiState.Success -> {
             if (current.contributors.isEmpty()) {
                 Text(
@@ -261,12 +250,25 @@ private fun ContributorRow(contributor: Contributor) {
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = contributor.name,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
+        Column {
+            Text(
+                text = contributor.name,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             )
-        )
+            if (contributor.contributions > 0) {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.about_contributor_contributions,
+                        contributor.contributions,
+                        contributor.contributions
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }

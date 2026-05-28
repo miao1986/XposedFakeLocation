@@ -23,7 +23,10 @@ data class Contributor(
 
 sealed interface ContributorsUiState {
     data object Loading : ContributorsUiState
-    data class Success(val contributors: List<Contributor>) : ContributorsUiState
+    data class Success(
+        val developer: Contributor?,
+        val contributors: List<Contributor>
+    ) : ContributorsUiState
     data class Error(val message: String? = null) : ContributorsUiState
 }
 
@@ -34,19 +37,48 @@ class AboutViewModel : ViewModel() {
     private val _contributorsState = MutableStateFlow<ContributorsUiState>(ContributorsUiState.Loading)
     val contributorsState: StateFlow<ContributorsUiState> = _contributorsState.asStateFlow()
 
+    // Shown in the developer section until (or unless) the live data arrives.
+    val developerFallback = Contributor(
+        name = DEVELOPER_LOGIN,
+        githubUrl = "https://github.com/$DEVELOPER_LOGIN",
+        avatarUrl = "https://github.com/$DEVELOPER_LOGIN.png",
+        contributions = 0
+    )
+
     init {
         loadContributors()
     }
 
-    fun loadContributors() {
+    fun loadContributors(forceRefresh: Boolean = false) {
+        val cached = cachedContributors()
+        if (!forceRefresh && cached != null) {
+            _contributorsState.value = splitContributors(cached)
+            return
+        }
+
         _contributorsState.value = ContributorsUiState.Loading
         viewModelScope.launch {
             _contributorsState.value = runCatching { fetchContributors() }
                 .fold(
-                    onSuccess = { ContributorsUiState.Success(it) },
+                    onSuccess = {
+                        cache = CachedResult(it, System.currentTimeMillis())
+                        splitContributors(it)
+                    },
                     onFailure = { ContributorsUiState.Error(it.message) }
                 )
         }
+    }
+
+    private fun splitContributors(all: List<Contributor>): ContributorsUiState.Success {
+        val developer = all.firstOrNull { it.name.equals(DEVELOPER_LOGIN, ignoreCase = true) }
+        val others = all.filterNot { it.name.equals(DEVELOPER_LOGIN, ignoreCase = true) }
+        return ContributorsUiState.Success(developer = developer, contributors = others)
+    }
+
+    private fun cachedContributors(): List<Contributor>? {
+        val snapshot = cache ?: return null
+        val isFresh = System.currentTimeMillis() - snapshot.timestampMillis < CACHE_TTL_MILLIS
+        return if (isFresh) snapshot.contributors else null
     }
 
     private suspend fun fetchContributors(): List<Contributor> = withContext(Dispatchers.IO) {
@@ -92,9 +124,21 @@ class AboutViewModel : ViewModel() {
         @SerializedName("contributions") val contributions: Int = 0
     )
 
+    private data class CachedResult(
+        val contributors: List<Contributor>,
+        val timestampMillis: Long
+    )
+
     private companion object {
         const val CONTRIBUTORS_URL =
             "https://api.github.com/repos/noobexon1/XposedFakeLocation/contributors?per_page=100"
+        const val DEVELOPER_LOGIN = "noobexon1"
         const val TIMEOUT_MILLIS = 10_000
+        const val CACHE_TTL_MILLIS = 5 * 60 * 1000L
+
+        // Process-level cache so re-opening the About screen (which recreates the
+        // ViewModel) reuses a recent result instead of hitting the API again.
+        @Volatile
+        var cache: CachedResult? = null
     }
 }
