@@ -39,9 +39,9 @@ class AboutViewModel : ViewModel() {
 
     // Shown in the developer section until (or unless) the live data arrives.
     val developerFallback = Contributor(
-        name = DEVELOPER_LOGIN,
-        githubUrl = "https://github.com/$DEVELOPER_LOGIN",
-        avatarUrl = "https://github.com/$DEVELOPER_LOGIN.png",
+        name = DEVELOPER,
+        githubUrl = "https://github.com/$DEVELOPER",
+        avatarUrl = "https://github.com/$DEVELOPER.png",
         contributions = 0
     )
 
@@ -70,8 +70,8 @@ class AboutViewModel : ViewModel() {
     }
 
     private fun splitContributors(all: List<Contributor>): ContributorsUiState.Success {
-        val developer = all.firstOrNull { it.name.equals(DEVELOPER_LOGIN, ignoreCase = true) }
-        val others = all.filterNot { it.name.equals(DEVELOPER_LOGIN, ignoreCase = true) }
+        val developer = all.firstOrNull { it.name.equals(DEVELOPER, ignoreCase = true) }
+        val others = all.filterNot { it.name.equals(DEVELOPER, ignoreCase = true) }
         return ContributorsUiState.Success(developer = developer, contributors = others)
     }
 
@@ -132,7 +132,7 @@ class AboutViewModel : ViewModel() {
     private companion object {
         const val CONTRIBUTORS_URL =
             "https://api.github.com/repos/noobexon1/XposedFakeLocation/contributors?per_page=100"
-        const val DEVELOPER_LOGIN = "noobexon1"
+        const val DEVELOPER = "noobexon1"
         const val TIMEOUT_MILLIS = 10_000
         const val CACHE_TTL_MILLIS = 5 * 60 * 1000L
 

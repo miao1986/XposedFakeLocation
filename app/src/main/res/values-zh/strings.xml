@@ -152,7 +152,4 @@
     <string name="about_contributors_error">无法加载贡献者。</string>
     <string name="about_contributors_empty">未找到贡献者。</string>
     <string name="about_contributors_retry">重试</string>
-    <plurals name="about_contributor_contributions">
-        <item quantity="other">%d 次贡献</item>
-    </plurals>
 </resources>

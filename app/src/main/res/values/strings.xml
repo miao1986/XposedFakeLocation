@@ -152,8 +152,4 @@
     <string name="about_contributors_error">Couldn\'t load contributors.</string>
     <string name="about_contributors_empty">No contributors found.</string>
     <string name="about_contributors_retry">Retry</string>
-    <plurals name="about_contributor_contributions">
-        <item quantity="one">%d contribution</item>
-        <item quantity="other">%d contributions</item>
-    </plurals>
 </resources>
