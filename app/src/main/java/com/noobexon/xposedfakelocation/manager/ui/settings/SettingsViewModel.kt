@@ -5,6 +5,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.noobexon.xposedfakelocation.data.*
+import com.noobexon.xposedfakelocation.data.model.GpsNoiseLevel
 import com.noobexon.xposedfakelocation.data.repository.PreferencesRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -94,6 +95,33 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    private class StringPreference(
+        initialValue: String,
+        private val flow: Flow<String>,
+        private val saveOperation: suspend (String) -> Unit,
+        private val viewModelScope: kotlinx.coroutines.CoroutineScope
+    ) {
+        private val _state = MutableStateFlow(initialValue)
+        val state: StateFlow<String> = _state.asStateFlow()
+
+        init {
+            viewModelScope.launch {
+                flow.collect { _state.value = it }
+            }
+        }
+
+        fun setValue(value: String) {
+            _state.value = value
+            viewModelScope.launch {
+                try {
+                    saveOperation(value)
+                } catch (e: Exception) {
+                    // Add error handling if needed
+                }
+            }
+        }
+    }
+
     // Preferences for Accuracy
     private val _useAccuracyPreference = BooleanPreference(
         DEFAULT_USE_ACCURACY,
@@ -144,6 +172,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope
     )
     val randomizeRadius: StateFlow<Double> = _randomizeRadiusPreference.state
+
+    private val _useGpsNoisePreference = BooleanPreference(
+        DEFAULT_USE_GPS_NOISE,
+        preferencesRepository.getUseGpsNoiseFlow(),
+        preferencesRepository::saveUseGpsNoise,
+        viewModelScope
+    )
+    val useGpsNoise: StateFlow<Boolean> = _useGpsNoisePreference.state
+
+    private val _gpsNoiseLevelPreference = StringPreference(
+        DEFAULT_GPS_NOISE_LEVEL,
+        preferencesRepository.getGpsNoiseLevelFlow(),
+        preferencesRepository::saveGpsNoiseLevel,
+        viewModelScope
+    )
+    val gpsNoiseLevel: StateFlow<GpsNoiseLevel> = _gpsNoiseLevelPreference.state
+        .map(GpsNoiseLevel::fromPreferenceValue)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), GpsNoiseLevel.NORMAL)
 
     // Preferences for Vertical Accuracy
     private val _useVerticalAccuracyPreference = BooleanPreference(
@@ -264,6 +310,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setAltitude(value: Double) = _altitudePreference.setValue(value)
     fun setUseRandomize(value: Boolean) = _useRandomizePreference.setValue(value)
     fun setRandomizeRadius(value: Double) = _randomizeRadiusPreference.setValue(value)
+    fun setUseGpsNoise(value: Boolean) = _useGpsNoisePreference.setValue(value)
+    fun setGpsNoiseLevel(value: GpsNoiseLevel) = _gpsNoiseLevelPreference.setValue(value.name)
     fun setUseVerticalAccuracy(value: Boolean) = _useVerticalAccuracyPreference.setValue(value)
     fun setVerticalAccuracy(value: Float) = _verticalAccuracyPreference.setValue(value)
     fun setUseMeanSeaLevel(value: Boolean) = _useMeanSeaLevelPreference.setValue(value)
