@@ -139,14 +139,10 @@ fun DrawerContent(
             DrawerItem(
                 icon = LineAwesomeIcons.Telegram,
                 label = "Telegram",
-                onClick = { Toast.makeText(context, comingSoon, Toast.LENGTH_SHORT).show() },
-                trailingIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(DrawerDimensions.BADGE_SIZE)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/XposedFakeLocationChat"))
+                    context.startActivity(intent)
+                    onCloseDrawer()
                 }
             )
 
