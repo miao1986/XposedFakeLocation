@@ -25,6 +25,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Development](#development)
+- [Contributing](#contributing)
 - [License](#license)
 - [Disclaimer](#disclaimer)
 - [Acknowledgements](#acknowledgements)
@@ -160,6 +161,11 @@ If you want to build by yourself:
 
    - Connect your rooted device.
    - Run the app from `Android Studio`.
+
+---
+
+## **Contributing**
+Contributions are welcome! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the project structure, coding guidelines, and the pull request process.
 
 ---
 
