@@ -69,7 +69,7 @@ class MainHook : IXposedHookLoadPackage {
                         ) {
                             Toast.makeText(
                                 it,
-                                HookMessages.fakeLocationActive(PreferencesUtil.getLanguageTag()),
+                                "Fake Location Is Active!",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
