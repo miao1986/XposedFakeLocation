@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import androidx.core.content.edit
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SHARED_PREFS_FILE)
 
@@ -94,15 +95,15 @@ class PreferencesRepository(private val context: Context) {
             
             // Save to legacy SharedPreferences for Xposed Module
             when (value) {
-                is Boolean -> sharedPrefs.edit().putBoolean(sharedPrefsKey, value).apply()
-                is String -> sharedPrefs.edit().putString(sharedPrefsKey, value).apply()
-                is Float -> sharedPrefs.edit().putFloat(sharedPrefsKey, value).apply()
+                is Boolean -> sharedPrefs.edit { putBoolean(sharedPrefsKey, value) }
+                is String -> sharedPrefs.edit { putString(sharedPrefsKey, value) }
+                is Float -> sharedPrefs.edit { putFloat(sharedPrefsKey, value) }
                 is Double -> {
                     val bits = java.lang.Double.doubleToRawLongBits(value)
-                    sharedPrefs.edit().putLong(sharedPrefsKey, bits).apply()
+                    sharedPrefs.edit { putLong(sharedPrefsKey, bits) }
                 }
-                is Long -> sharedPrefs.edit().putLong(sharedPrefsKey, value).apply()
-                is Int -> sharedPrefs.edit().putInt(sharedPrefsKey, value).apply()
+                is Long -> sharedPrefs.edit { putLong(sharedPrefsKey, value) }
+                is Int -> sharedPrefs.edit { putInt(sharedPrefsKey, value) }
             }
             
             Log.d(tag, "Saved $sharedPrefsKey: $value")
@@ -182,9 +183,7 @@ class PreferencesRepository(private val context: Context) {
                 preferences.remove(PreferenceKeys.LAST_CLICKED_LOCATION)
             }
             
-            sharedPrefs.edit()
-                .remove(KEY_LAST_CLICKED_LOCATION)
-                .apply()
+            sharedPrefs.edit { remove(KEY_LAST_CLICKED_LOCATION) }
                 
             saveIsPlaying(false)
             Log.d(tag, "Cleared 'LastClickedLocation' from preferences and set 'IsPlaying' to false")

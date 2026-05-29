@@ -26,32 +26,46 @@ class MainHook : IXposedHookLoadPackage {
     private var phoneServicesHooks: PhoneServicesHooks? = null
 
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
-        val useInAppTargetApps = PreferencesUtil.getUseInAppTargetApps()
-        when (lpparam.packageName) {
-            "android" -> {
-                if (useInAppTargetApps) {
-                    XposedBridge.log("$tag Mode=IN_APP_TARGET_LIST | Installing system-server location hooks (android).")
-                    systemServicesHooks = SystemServicesHooks(lpparam).also { it.initHooks() }
-                } else {
-                    XposedBridge.log("$tag Mode=LSPOSED_SCOPE_ONLY | Skipping system-server hooks (android). Selection is driven solely by LSPosed scope.")
-                }
-                return
-            }
-            "com.android.phone" -> {
-                if (useInAppTargetApps) {
-                    XposedBridge.log("$tag Mode=IN_APP_TARGET_LIST | Installing phone-process location side-channel hooks (com.android.phone).")
-                    phoneServicesHooks = PhoneServicesHooks(lpparam).also { it.initHooks() }
-                } else {
-                    XposedBridge.log("$tag Mode=LSPOSED_SCOPE_ONLY | Skipping phone-process hooks (com.android.phone).")
-                }
-                return
-            }
-            MANAGER_APP_PACKAGE_NAME -> return
-            else -> {
-                XposedBridge.log("$tag Mode=${if (useInAppTargetApps) "IN_APP_TARGET_LIST" else "LSPOSED_SCOPE_ONLY"} | Installing in-process location hooks for ${lpparam.packageName}")
-                initHookingLogic(lpparam)
-            }
+        // Avoid hooking own app to prevent recursion
+        if (lpparam.packageName == MANAGER_APP_PACKAGE_NAME) return
+
+        // If not playing or null, do not proceed with hooking
+        if (PreferencesUtil.getIsPlaying() != true) return
+
+        // Hook system services if user asked for system-wide hooks
+        if (lpparam.packageName == "android") {
+            systemServicesHooks = SystemServicesHooks(lpparam).also { it.initHooks() }
         }
+
+        initHookingLogic(lpparam)
+
+        // TODO: Integrate the commented code by splitting to cases of system or not system (after i integrate new xposed api)
+//        val useInAppTargetApps = PreferencesUtil.getUseInAppTargetApps()
+//        when (lpparam.packageName) {
+//            "android" -> {
+//                if (useInAppTargetApps) {
+//                    XposedBridge.log("$tag Mode=IN_APP_TARGET_LIST | Installing system-server location hooks (android).")
+//                    systemServicesHooks = SystemServicesHooks(lpparam).also { it.initHooks() }
+//                } else {
+//                    XposedBridge.log("$tag Mode=LSPOSED_SCOPE_ONLY | Skipping system-server hooks (android). Selection is driven solely by LSPosed scope.")
+//                }
+//                return
+//            }
+//            "com.android.phone" -> {
+//                if (useInAppTargetApps) {
+//                    XposedBridge.log("$tag Mode=IN_APP_TARGET_LIST | Installing phone-process location side-channel hooks (com.android.phone).")
+//                    phoneServicesHooks = PhoneServicesHooks(lpparam).also { it.initHooks() }
+//                } else {
+//                    XposedBridge.log("$tag Mode=LSPOSED_SCOPE_ONLY | Skipping phone-process hooks (com.android.phone).")
+//                }
+//                return
+//            }
+//            MANAGER_APP_PACKAGE_NAME -> return
+//            else -> {
+//                XposedBridge.log("$tag Mode=${if (useInAppTargetApps) "IN_APP_TARGET_LIST" else "LSPOSED_SCOPE_ONLY"} | Installing in-process location hooks for ${lpparam.packageName}")
+//                initHookingLogic(lpparam)
+//            }
+//        }
     }
 
     private fun initHookingLogic(lpparam: LoadPackageParam) {
@@ -64,12 +78,8 @@ class MainHook : IXposedHookLoadPackage {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     context = (param.args[0] as Application).applicationContext.also {
                         XposedBridge.log("$tag Target App's context has been acquired (${lpparam.packageName}).")
-                        if (!PreferencesUtil.getHideFakeLocationToast()) {
-                            Toast.makeText(
-                                it,
-                                "Fake Location Is Active!",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        if (PreferencesUtil.getHideFakeLocationToast() != false) {
+                            Toast.makeText(it, "Fake Location Is Active!", Toast.LENGTH_SHORT).show()
                         }
                     }
                     locationApiHooks = LocationApiHooks(lpparam).also { it.initHooks() }

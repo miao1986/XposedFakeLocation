@@ -127,8 +127,8 @@ object PreferencesUtil {
         return getPreference<Float>(KEY_SPEED_ACCURACY)
     }
 
-    fun getHideFakeLocationToast(): Boolean {
-        return getPreference<Boolean>(KEY_HIDE_FAKE_LOCATION_TOAST) ?: DEFAULT_HIDE_FAKE_LOCATION_TOAST
+    fun getHideFakeLocationToast(): Boolean? {
+        return getPreference<Boolean>(KEY_HIDE_FAKE_LOCATION_TOAST)
     }
 
     fun getLanguageTag(): String {
@@ -155,15 +155,6 @@ object PreferencesUtil {
             XposedBridge.log("$TAG Error parsing target apps JSON: ${e.message}")
             emptySet()
         }
-    }
-
-    fun shouldSpoofPackage(packageName: String?): Boolean {
-        if (packageName.isNullOrBlank() || packageName == MANAGER_APP_PACKAGE_NAME) return false
-        if (getIsPlaying() != true || getLastClickedLocation() == null) return false
-
-        val targetApps = getTargetApps()
-        return targetApps.contains(packageName) ||
-                (targetApps.isNotEmpty() && locationProxyPackages.contains(packageName))
     }
 
     private inline fun <reified T> getPreference(key: String): T? {
