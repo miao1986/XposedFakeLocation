@@ -1,7 +1,6 @@
 package com.noobexon.xposedfakelocation.manager
 
 import android.app.Application
-import com.noobexon.xposedfakelocation.data.repository.PreferencesRepository
 import io.github.libxposed.service.XposedService
 import io.github.libxposed.service.XposedServiceHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +21,6 @@ class App : Application(), XposedServiceHelper.OnServiceListener {
 
     override fun onServiceBind(service: XposedService) {
         _serviceState.value = service
-        PreferencesRepository(this).syncAllToRemote()
     }
 
     override fun onServiceDied(service: XposedService) {

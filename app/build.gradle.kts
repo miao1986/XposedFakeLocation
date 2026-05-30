@@ -92,11 +92,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.hiddenapibypass)
     implementation(libs.coil.compose)
-    
-    // DataStore
-    implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.datastore.preferences.core)
-    
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
