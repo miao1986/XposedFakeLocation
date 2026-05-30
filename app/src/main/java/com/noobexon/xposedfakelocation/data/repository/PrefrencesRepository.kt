@@ -218,10 +218,7 @@ class PreferencesRepository(context: Context) {
     fun getHideFakeLocationToast(): Boolean = remotePrefs()?.getBoolean(KEY_HIDE_FAKE_LOCATION_TOAST, DEFAULT_HIDE_FAKE_LOCATION_TOAST) ?: DEFAULT_HIDE_FAKE_LOCATION_TOAST
     // endregion
 
-    // region Target Apps selection (remote)
-    fun getUseInAppTargetAppsFlow(): Flow<Boolean> = remoteFlow(KEY_USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS) { it.getBoolean(KEY_USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS) }
-    suspend fun saveUseInAppTargetApps(useInAppTargetApps: Boolean) = editRemote { putBoolean(KEY_USE_INAPP_TARGET_APPS, useInAppTargetApps) }
-
+    // region Target Apps (remote)
     fun getTargetAppsFlow(): Flow<Set<String>> =
         remoteFlow(KEY_TARGET_APPS, emptySet()) { parseTargetApps(it.getString(KEY_TARGET_APPS, null)) }
 

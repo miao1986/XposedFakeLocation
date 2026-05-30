@@ -44,12 +44,9 @@
 
     <string name="dialog_module_not_active_title">Module Not Active</string>
     <string name="dialog_module_not_active_message">XposedFakeLocation module is not active in your Xposed manager app. Please enable it and restart the app to continue.</string>
-    <string name="dialog_reboot_required_title">Reboot required</string>
-    <string name="dialog_reboot_required_message">You just enabled \'Use built-in target app selection\'. The system_server and com.android.phone hooks can only be installed at boot, so a full device reboot is required for this change to take effect. Per-app hooks are unaffected and pick up changes on the next app launch.</string>
 
     <string name="category_language">Language</string>
     <string name="category_notifications">Notifications</string>
-    <string name="category_target_apps">Target Apps</string>
     <string name="category_external_control">External Control</string>
     <string name="category_location">Location</string>
     <string name="category_altitude">Altitude</string>
@@ -59,8 +56,6 @@
     <string name="setting_language_description">Choose the language used by the manager app and Xposed toast message.</string>
     <string name="setting_hide_toast_title">Hide \'Fake location active\' toast</string>
     <string name="setting_hide_toast_description">Suppresses the toast shown when the module activates in a target app</string>
-    <string name="setting_use_inapp_target_apps_title">Use built-in target app selection</string>
-    <string name="setting_use_inapp_target_apps_description">On (default): target apps are picked in the in-app \'Target Apps\' screen; LSPosed scope only needs \'android\' and \'com.android.phone\'. Off: the in-app list is ignored and the system-server / phone hooks are skipped — pick target apps directly in LSPosed scope (pre-v0.0.7 behavior). A reboot is only required when enabling this option, so the system_server and com.android.phone hooks can be installed at boot. Switching back to the LSPosed-scope-only method, or any per-app target-list change, takes effect at the next app launch — no reboot needed.</string>
     <string name="setting_external_broadcast_title">Allow external broadcast control</string>
     <string name="setting_external_broadcast_description">Off (default): blocks the BroadcastReceiver — no app or ADB shell can start/stop spoofing or set coordinates via intents. On: any installed app and \'adb shell am broadcast\' can drive the module (no permission check; coordinates are clamped to valid lat/lon ranges). Only enable this if you trust every app on the device or are running on a controlled (e.g., automation) device. See docs/EXTERNAL_CONTROL.md for actions and lock-down options.</string>
     <string name="setting_more_info">More information about %1$s</string>

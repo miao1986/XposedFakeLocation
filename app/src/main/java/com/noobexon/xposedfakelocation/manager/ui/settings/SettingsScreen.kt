@@ -227,23 +227,9 @@ fun SettingsScreen(
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val scrollState = rememberScrollState()
-    var showRebootDialog by remember { mutableStateOf(false) }
     val allSettings = SettingDefinitions.getSettings(settingsViewModel)
     val categories = SettingDefinitions.getCategories()
     val selectedLanguage = LanguageOption.fromTag(settingsViewModel.languageTag.collectAsState().value)
-
-    if (showRebootDialog) {
-        AlertDialog(
-            onDismissRequest = { showRebootDialog = false },
-            title = { Text(stringResource(R.string.dialog_reboot_required_title)) },
-            text = { Text(stringResource(R.string.dialog_reboot_required_message)) },
-            confirmButton = {
-                TextButton(onClick = { showRebootDialog = false }) {
-                    Text(stringResource(R.string.action_ok))
-                }
-            }
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -316,28 +302,6 @@ fun SettingsScreen(
                             description = stringResource(R.string.setting_hide_toast_description),
                             checked = settingsViewModel.hideFakeLocationToast.collectAsState().value,
                             onCheckedChange = settingsViewModel::setHideFakeLocationToast
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
-
-                CategoryHeader(stringResource(R.string.category_target_apps))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimensions.SPACING_SMALL),
-                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
-                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
-                ) {
-                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
-                        BooleanSettingItem(
-                            title = stringResource(R.string.setting_use_inapp_target_apps_title),
-                            description = stringResource(R.string.setting_use_inapp_target_apps_description),
-                            checked = settingsViewModel.useInAppTargetApps.collectAsState().value,
-                            onCheckedChange = { newValue ->
-                                settingsViewModel.setUseInAppTargetApps(newValue)
-                                if (newValue) showRebootDialog = true
-                            }
                         )
                     }
                 }
