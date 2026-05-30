@@ -3,6 +3,7 @@ package com.noobexon.xposedfakelocation.xposed
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
+import com.noobexon.xposedfakelocation.data.REMOTE_PREFS_GROUP
 import com.noobexon.xposedfakelocation.xposed.hooks.LocationApiHooks
 import com.noobexon.xposedfakelocation.xposed.utils.LocationUtil
 import com.noobexon.xposedfakelocation.xposed.utils.PreferencesUtil
@@ -24,6 +25,7 @@ class ModuleEntry : XposedModule() {
     override fun onModuleLoaded(param: ModuleLoadedParam) {
         log(Log.INFO, TAG, "onModuleLoaded: ${param.processName}")
         LocationUtil.logger = { priority, tag, message -> log(priority, tag, message) }
+        PreferencesUtil.logger = { priority, tag, message -> log(priority, tag, message) }
     }
 
     override fun onPackageLoaded(param: PackageLoadedParam) {
@@ -38,6 +40,8 @@ class ModuleEntry : XposedModule() {
 
         // Run per-package setup only once.
         if (!param.isFirstPackage) return
+
+        PreferencesUtil.init(getRemotePreferences(REMOTE_PREFS_GROUP))
 
         // If not playing or null, do not proceed with hooking
         if (PreferencesUtil.getIsPlaying() != true) return

@@ -11,6 +11,7 @@
         tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
 
     <application
+        android:name=".manager.App"
         android:icon="@mipmap/ic_launcher"
         android:description="@string/description"
         android:label="@string/app_name"

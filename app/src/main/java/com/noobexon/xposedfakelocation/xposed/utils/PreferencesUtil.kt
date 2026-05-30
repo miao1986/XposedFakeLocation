@@ -1,59 +1,38 @@
 // PreferencesUtil.kt
 package com.noobexon.xposedfakelocation.xposed.utils
 
+import android.content.SharedPreferences
+import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.noobexon.xposedfakelocation.data.DEFAULT_ACCURACY
-import com.noobexon.xposedfakelocation.data.DEFAULT_ALTITUDE
-import com.noobexon.xposedfakelocation.data.DEFAULT_HIDE_FAKE_LOCATION_TOAST
-import com.noobexon.xposedfakelocation.data.DEFAULT_LANGUAGE_TAG
-import com.noobexon.xposedfakelocation.data.DEFAULT_MEAN_SEA_LEVEL
-import com.noobexon.xposedfakelocation.data.DEFAULT_MEAN_SEA_LEVEL_ACCURACY
-import com.noobexon.xposedfakelocation.data.DEFAULT_RANDOMIZE_RADIUS
-import com.noobexon.xposedfakelocation.data.DEFAULT_SPEED
-import com.noobexon.xposedfakelocation.data.DEFAULT_SPEED_ACCURACY
-import com.noobexon.xposedfakelocation.data.DEFAULT_USE_INAPP_TARGET_APPS
-import com.noobexon.xposedfakelocation.data.DEFAULT_VERTICAL_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_ALTITUDE
-import com.noobexon.xposedfakelocation.data.KEY_HIDE_FAKE_LOCATION_TOAST
-import com.noobexon.xposedfakelocation.data.KEY_IS_PLAYING
-import com.noobexon.xposedfakelocation.data.KEY_LANGUAGE_TAG
-import com.noobexon.xposedfakelocation.data.KEY_LAST_CLICKED_LOCATION
-import com.noobexon.xposedfakelocation.data.KEY_MEAN_SEA_LEVEL
-import com.noobexon.xposedfakelocation.data.KEY_MEAN_SEA_LEVEL_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_RANDOMIZE_RADIUS
-import com.noobexon.xposedfakelocation.data.KEY_SPEED
-import com.noobexon.xposedfakelocation.data.KEY_SPEED_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_TARGET_APPS
-import com.noobexon.xposedfakelocation.data.KEY_USE_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_USE_ALTITUDE
-import com.noobexon.xposedfakelocation.data.KEY_USE_INAPP_TARGET_APPS
-import com.noobexon.xposedfakelocation.data.KEY_USE_MEAN_SEA_LEVEL
-import com.noobexon.xposedfakelocation.data.KEY_USE_MEAN_SEA_LEVEL_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_USE_RANDOMIZE
-import com.noobexon.xposedfakelocation.data.KEY_USE_SPEED
-import com.noobexon.xposedfakelocation.data.KEY_USE_SPEED_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_USE_VERTICAL_ACCURACY
-import com.noobexon.xposedfakelocation.data.KEY_VERTICAL_ACCURACY
-import com.noobexon.xposedfakelocation.data.MANAGER_APP_PACKAGE_NAME
-import com.noobexon.xposedfakelocation.data.SHARED_PREFS_FILE
+import com.noobexon.xposedfakelocation.data.*
 import com.noobexon.xposedfakelocation.data.model.LastClickedLocation
-import de.robv.android.xposed.XSharedPreferences
-import de.robv.android.xposed.XposedBridge
 
 object PreferencesUtil {
     private const val TAG = "[PreferencesUtil]"
+
+    @Volatile var logger: ((Int, String, String) -> Unit)? = null
+    private fun log(msg: String, priority: Int = Log.INFO) = logger?.invoke(priority, TAG, msg)
+
+    @Volatile private var preferences: SharedPreferences? = null
+
+    // IMPORTANT: keep a strong reference. SharedPreferences holds listeners *weakly*,
+    // so a listener that isn't referenced anywhere gets GC'd and silently stops firing.
+    private val changeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            log("Remote pref changed: $key")
+            // If you keep an explicit cache, refresh the affected key here.
+            // TODO: verify this and implement
+    }
+
+    fun init(prefs: SharedPreferences) {
+        preferences = prefs
+        prefs.registerOnSharedPreferenceChangeListener(changeListener)
+        log("Initialized with remote preferences")
+    }
 
     private val locationProxyPackages = setOf(
         "com.android.location.fused",
         "com.google.android.gms"
     )
-
-    private val preferences: XSharedPreferences = XSharedPreferences(MANAGER_APP_PACKAGE_NAME, SHARED_PREFS_FILE).apply {
-        makeWorldReadable()
-        reload()
-    }
 
     fun getIsPlaying(): Boolean? {
         return getPreference<Boolean>(KEY_IS_PLAYING)
@@ -131,34 +110,32 @@ object PreferencesUtil {
         return getPreference<Boolean>(KEY_HIDE_FAKE_LOCATION_TOAST)
     }
 
-    fun getLanguageTag(): String {
-        preferences.reload()
-        return preferences.getString(KEY_LANGUAGE_TAG, DEFAULT_LANGUAGE_TAG) ?: DEFAULT_LANGUAGE_TAG
-    }
-
-    fun getUseInAppTargetApps(): Boolean {
-        preferences.reload()
-        return if (preferences.contains(KEY_USE_INAPP_TARGET_APPS)) {
-            preferences.getBoolean(KEY_USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS)
-        } else {
-            DEFAULT_USE_INAPP_TARGET_APPS
-        }
-    }
-
-    fun getTargetApps(): Set<String> {
-        preferences.reload()
-        val json = preferences.getString(KEY_TARGET_APPS, null) ?: return emptySet()
-        return try {
-            val type = object : TypeToken<List<String>>() {}.type
-            Gson().fromJson<List<String>>(json, type).toSet()
-        } catch (e: Exception) {
-            XposedBridge.log("$TAG Error parsing target apps JSON: ${e.message}")
-            emptySet()
-        }
-    }
+    // TODO: integrate after im done with new api integration
+//    fun getLanguageTag(): String {
+//        return preferences.getString(KEY_LANGUAGE_TAG, DEFAULT_LANGUAGE_TAG) ?: DEFAULT_LANGUAGE_TAG
+//    }
+//
+//    fun getUseInAppTargetApps(): Boolean {
+//        return if (preferences.contains(KEY_USE_INAPP_TARGET_APPS)) {
+//            preferences.getBoolean(KEY_USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS)
+//        } else {
+//            DEFAULT_USE_INAPP_TARGET_APPS
+//        }
+//    }
+//
+//    fun getTargetApps(): Set<String> {
+//        val json = preferences.getString(KEY_TARGET_APPS, null) ?: return emptySet()
+//        return try {
+//            val type = object : TypeToken<List<String>>() {}.type
+//            Gson().fromJson<List<String>>(json, type).toSet()
+//        } catch (e: Exception) {
+//            log("$TAG Error parsing target apps JSON: ${e.message}")
+//            emptySet()
+//        }
+//    }
 
     private inline fun <reified T> getPreference(key: String): T? {
-        preferences.reload()
+        val preferences = preferences ?: return null // TODO: add logs here to know that its null
         return when (T::class) {
             Double::class -> {
                 val defaultValue = when (key) {
@@ -187,14 +164,14 @@ object PreferencesUtil {
                 if (json != null) {
                     try {
                         Gson().fromJson(json, T::class.java).also {
-                            XposedBridge.log("$TAG Retrieved $key: $it")
+                            log("Retrieved $key: $it")
                         }
                     } catch (e: Exception) {
-                        XposedBridge.log("$TAG Error parsing $key JSON: ${e.message}")
+                        log("Error parsing $key JSON: ${e.message}")
                         null
                     }
                 } else {
-                    XposedBridge.log("$TAG $key not found in preferences.")
+                    log("$key not found in preferences.")
                     null
                 }
             }
