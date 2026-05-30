@@ -4,10 +4,15 @@ import android.app.Application
 import com.noobexon.xposedfakelocation.data.repository.PreferencesRepository
 import io.github.libxposed.service.XposedService
 import io.github.libxposed.service.XposedServiceHelper
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class App : Application(), XposedServiceHelper.OnServiceListener {
     companion object {
-        @Volatile var service: XposedService? = null; private set
+        private val _serviceState = MutableStateFlow<XposedService?>(null)
+        val serviceState: StateFlow<XposedService?> = _serviceState.asStateFlow()
+        val service: XposedService? get() = _serviceState.value   // keep existing callers working
     }
 
     override fun onCreate() {
@@ -16,11 +21,11 @@ class App : Application(), XposedServiceHelper.OnServiceListener {
     }
 
     override fun onServiceBind(service: XposedService) {
-        Companion.service = service
+        _serviceState.value = service
         PreferencesRepository(this).syncAllToRemote()
     }
 
     override fun onServiceDied(service: XposedService) {
-        Companion.service = null
+        _serviceState.value = null
     }
 }
