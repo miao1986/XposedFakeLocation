@@ -4,6 +4,7 @@ package com.noobexon.xposedfakelocation.xposed.utils
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
+import android.util.Log
 import com.noobexon.xposedfakelocation.data.DEFAULT_ACCURACY
 import com.noobexon.xposedfakelocation.data.DEFAULT_ALTITUDE
 import com.noobexon.xposedfakelocation.data.DEFAULT_MEAN_SEA_LEVEL
@@ -14,7 +15,6 @@ import com.noobexon.xposedfakelocation.data.DEFAULT_SPEED_ACCURACY
 import com.noobexon.xposedfakelocation.data.DEFAULT_VERTICAL_ACCURACY
 import com.noobexon.xposedfakelocation.data.PI
 import com.noobexon.xposedfakelocation.data.RADIUS_EARTH
-import de.robv.android.xposed.XposedBridge
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Random
 import kotlin.math.asin
@@ -25,6 +25,13 @@ import kotlin.math.sqrt
 
 object LocationUtil {
     private const val TAG = "[LocationUtil]"
+
+    @Volatile
+    var logger: ((priority: Int, tag: String, message: String) -> Unit)? = null
+
+    private fun log(message: String, priority: Int = Log.INFO) {
+        logger?.invoke(priority, TAG, message)
+    }
 
     private const val DEBUG: Boolean = true
 
@@ -98,9 +105,9 @@ object LocationUtil {
     private fun attemptHideMockProvider(fakeLocation: Location) {
         try {
             HiddenApiBypass.invoke(fakeLocation.javaClass, fakeLocation, "setIsFromMockProvider", false)
-            XposedBridge.log("$TAG invoked hidden API - setIsFromMockProvider: false)")
+            log("invoked hidden API - setIsFromMockProvider: false)")
         } catch (e: Exception) {
-            XposedBridge.log("$TAG Not possible to mock - ${e.message}")
+            log("Not possible to mock - ${e.message}", priority = Log.ERROR)
         }
     }
 
@@ -147,19 +154,19 @@ object LocationUtil {
                 }
 
                 if (DEBUG) {
-                    XposedBridge.log("$TAG Updated fake location values to:")
-                    XposedBridge.log("\tCoordinates: (latitude = $latitude, longitude = $longitude)")
-                    XposedBridge.log("\tAccuracy: $accuracy")
-                    XposedBridge.log("\tAltitude: $altitude")
-                    XposedBridge.log("\tVertical Accuracy: $verticalAccuracy")
-                    XposedBridge.log("\tMean Sea Level: $meanSeaLevel")
-                    XposedBridge.log("\tMean Sea Level Accuracy: $meanSeaLevelAccuracy")
-                    XposedBridge.log("\tSpeed: $speed")
-                    XposedBridge.log("\tSpeed Accuracy: $speedAccuracy")
+                    log("Updated fake location values to:")
+                    log("\tCoordinates: (latitude = $latitude, longitude = $longitude)")
+                    log("\tAccuracy: $accuracy")
+                    log("\tAltitude: $altitude")
+                    log("\tVertical Accuracy: $verticalAccuracy")
+                    log("\tMean Sea Level: $meanSeaLevel")
+                    log("\tMean Sea Level Accuracy: $meanSeaLevelAccuracy")
+                    log("\tSpeed: $speed")
+                    log("\tSpeed Accuracy: $speedAccuracy")
                 }
-            } ?: XposedBridge.log("$TAG Last clicked location is null")
+            } ?: log("Last clicked location is null")
         } catch (e: Exception) {
-            XposedBridge.log("$TAG Error - ${e.message}")
+            log("Error - ${e.message}", priority = Log.ERROR)
         }
     }
 

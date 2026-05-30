@@ -1,10 +1,10 @@
 package com.noobexon.xposedfakelocation.xposed
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.noobexon.xposedfakelocation.xposed.hooks.LocationApiHooks
+import com.noobexon.xposedfakelocation.xposed.utils.LocationUtil
 import com.noobexon.xposedfakelocation.xposed.utils.PreferencesUtil
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
@@ -22,8 +22,8 @@ class ModuleEntry : XposedModule() {
 //    private var phoneServicesHooks: PhoneServicesHooks? = null
 
     override fun onModuleLoaded(param: ModuleLoadedParam) {
-        super.onModuleLoaded(param)
         log(Log.INFO, TAG, "onModuleLoaded: ${param.processName}")
+        LocationUtil.logger = { priority, tag, message -> log(priority, tag, message) }
     }
 
     override fun onPackageLoaded(param: PackageLoadedParam) {
@@ -92,7 +92,7 @@ class ModuleEntry : XposedModule() {
                     Toast.makeText(context, "Fake Location Is Active!", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                log(Log.ERROR, TAG, "Toast/context failed", e)
+                log(Log.ERROR, TAG, "Toast/context failed - ${e.message}")
             }
 
             locationApiHooks = LocationApiHooks(this, param.classLoader).also { it.initHooks() }
