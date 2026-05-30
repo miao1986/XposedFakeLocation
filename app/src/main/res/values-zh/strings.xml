@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">XposedFakeLocation</string>
 
+    <string name="description">spoof your device location globally or for specific apps</string>
+
     <string name="language_system">跟随系统</string>
     <string name="language_english">英语</string>
     <string name="language_chinese">中文</string>
