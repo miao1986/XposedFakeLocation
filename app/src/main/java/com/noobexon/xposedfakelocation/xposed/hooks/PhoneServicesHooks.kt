@@ -90,9 +90,10 @@ class PhoneServicesHooks(private val appLpparam: LoadPackageParam) {
     }
 
     private fun shouldSpoofArgs(args: Array<Any?>?): Boolean {
-        return args?.asSequence()
-            ?.mapNotNull(::extractPackageName)
-            ?.any(LocationUtil::shouldSpoofPackage) == true
+//        return args?.asSequence()
+//            ?.mapNotNull(::extractPackageName)
+//            ?.any(LocationUtil::shouldSpoofPackage) == true
+        return false // TODO: this is just a temp fix
     }
 
     private fun extractPackageName(value: Any?): String? {

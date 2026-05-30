@@ -33,9 +33,9 @@ class MainHook : IXposedHookLoadPackage {
         if (PreferencesUtil.getIsPlaying() != true) return
 
         // Hook system services if user asked for system-wide hooks
-        if (lpparam.packageName == "android") {
-            systemServicesHooks = SystemServicesHooks(lpparam).also { it.initHooks() }
-        }
+//        if (lpparam.packageName == "android") {
+//            systemServicesHooks = SystemServicesHooks(lpparam).also { it.initHooks() }
+//        }
 
         initHookingLogic(lpparam)
 

@@ -81,7 +81,7 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
         hookAll(providerClass, "onReportLocation", object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                if (!LocationUtil.isSpoofingEnabled()) return
+//                if (!LocationUtil.isSpoofingEnabled()) return
                 val locationResult = param.args.firstOrNull() ?: return
                 val registrationsField = findField(providerClass, "mRegistrations") ?: return
                 val registrations = registrationsField.get(param.thisObject) as? Map<*, *> ?: return
@@ -95,15 +95,16 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
                 registrations.forEach { (key, value) ->
                     originalRegistrations[key] = value
-                    val packageNames = collectPackageNames(value)
-                    val spoofedPackage = packageNames.firstOrNull(LocationUtil::shouldSpoofPackage)
-                    if (spoofedPackage != null) {
-                        locationsField.set(locationResult, arrayListOf(fakeLocation))
-                        deliverLocationToRegistration(value, locationResult)
-                        XposedBridge.log("$tag Delivered spoofed provider location to $spoofedPackage.")
-                    } else {
+                    // TODO: just a temp fix
+//                    val packageNames = collectPackageNames(value)
+//                    val spoofedPackage = packageNames.firstOrNull(LocationUtil::shouldSpoofPackage)
+//                    if (spoofedPackage != null) {
+//                        locationsField.set(locationResult, arrayListOf(fakeLocation))
+//                        deliverLocationToRegistration(value, locationResult)
+//                        XposedBridge.log("$tag Delivered spoofed provider location to $spoofedPackage.")
+//                    } else {
                         passthroughRegistrations[key] = value
-                    }
+//                    }
                 }
 
                 locationsField.set(locationResult, ArrayList(originalLocations))
@@ -175,7 +176,7 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
         hookAll(receiverClass, "callLocationChangedLocked", object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                if (collectPackageNames(param.thisObject).none(LocationUtil::shouldSpoofPackage)) return
+//                if (collectPackageNames(param.thisObject).none(LocationUtil::shouldSpoofPackage)) return
 
                 val locationArgIndex = param.args.indexOfFirst { it is Location }
                 if (locationArgIndex == -1) return
@@ -351,10 +352,11 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
     }
 
     private fun shouldSpoofArgs(args: Array<Any?>?): Boolean {
-        return args?.asSequence()
-            ?.flatMap { collectPackageNames(it).asSequence() }
-            ?.distinct()
-            ?.any(LocationUtil::shouldSpoofPackage) == true
+//        return args?.asSequence()
+//            ?.flatMap { collectPackageNames(it).asSequence() }
+//            ?.distinct()
+//            ?.any(LocationUtil::shouldSpoofPackage) == true
+        return false // TODO: this is just a temp fix
     }
 
     private fun collectPackageNames(value: Any?): Set<String> {
