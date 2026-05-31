@@ -18,6 +18,7 @@ import io.github.libxposed.api.XposedModuleInterface.SystemServerStartingParam
 class ModuleEntry : XposedModule() {
     companion object {
         const val TAG = "[ModuleEntry]"
+        private const val PHONE_PACKAGE = "com.android.phone"
     }
 
     private var locationApiHooks: LocationApiHooks? = null
@@ -45,12 +46,23 @@ class ModuleEntry : XposedModule() {
 
         PreferencesUtil.init(getRemotePreferences(REMOTE_PREFS_GROUP))
 
-        initHookingLogic(param)
-
+        if (param.packageName == PHONE_PACKAGE) {
+            // Telephony process: only the cell/Wi-Fi telephony spoofing belongs here. We deliberately
+            // skip LocationApiHooks so we don't fake com.android.phone's own location requests.
+            phoneServicesHooks = PhoneServicesHooks(this, param.classLoader).also { it.initHooks() }
+        } else {
+            initHookingLogic(param)
+        }
     }
 
     override fun onSystemServerStarting(param: SystemServerStartingParam) {
         log(Log.INFO, TAG, "onSystemServerStarting:\n\t${param.classLoader}")
+
+        // system_server is a hooked process only when the user enabled system-level hooks (which adds
+        // "android" to the module scope). Per-intercept isPlaying + target_apps gating keeps these
+        // inert until the user is actively spoofing a selected target.
+        PreferencesUtil.init(getRemotePreferences(REMOTE_PREFS_GROUP))
+        systemServicesHooks = SystemServicesHooks(this, param.classLoader).also { it.initHooks() }
     }
 
     private fun initHookingLogic(param: PackageReadyParam) {
